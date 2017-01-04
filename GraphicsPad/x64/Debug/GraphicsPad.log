@@ -1,0 +1,5 @@
+﻿  Window.cpp
+c:\users\langel.ourcode\documents\visual studio 2015\projects\opengljamieking\graphicspad\window.h(4): fatal error C1083: Cannot open include file: 'QtOpenGL\qglwidget': No such file or directory
+  main.cpp
+c:\users\langel.ourcode\documents\visual studio 2015\projects\opengljamieking\graphicspad\main.cpp(1): fatal error C1083: Cannot open include file: 'Qt/qapplication.h': No such file or directory
+  Generating Code...
