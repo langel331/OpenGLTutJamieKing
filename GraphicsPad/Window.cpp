@@ -3,29 +3,37 @@
 #include <fstream>
 #include "Window.h"
 
+const float X_DELTA = 0.1f;
+const uint NUM_VERTICES_PER_TRI = 3;
+const uint NUM_FLOATS_PER_VERTICE = 6;
+const uint TRIANGLE_BYTE_SIZE = NUM_VERTICES_PER_TRI * NUM_FLOATS_PER_VERTICE * sizeof(float);
+const uint MAX_TRIS = 20;
+
+uint numTris = 0;
+
 void sendDatatoOpenGL()
 {
-	// depth values for each triangle
-	const float RED_TRIANGLE_Z = 0.5f;
-	const float BLUE_TRIANGLE_Z = -0.5f;
+	//// depth values for each triangle
+	//const float RED_TRIANGLE_Z = 0.5f;
+	//const float BLUE_TRIANGLE_Z = -0.5f;
 
 	// Vertex array of points and color on a triangle
-	GLfloat verts[]
-	{
-		-1.0f, -1.0f, RED_TRIANGLE_Z,
-		+1.0f, +0.0f, +0.0f,
-		+0.0f, +1.0f, RED_TRIANGLE_Z,
-		+1.0f, +0.0f, +0.0f,
-		+1.0f, -1.0f, RED_TRIANGLE_Z,
-		+1.0f, +0.0f, +0.0f,
+	//GLfloat verts[]
+	//{
+	//	-1.0f, -1.0f, RED_TRIANGLE_Z,
+	//	+1.0f, +0.0f, +0.0f,
+	//	+0.0f, +1.0f, RED_TRIANGLE_Z,
+	//	+1.0f, +0.0f, +0.0f,
+	//	+1.0f, -1.0f, RED_TRIANGLE_Z,
+	//	+1.0f, +0.0f, +0.0f,
 
-		+1.0f, +1.0f, BLUE_TRIANGLE_Z,
-		+0.0f, +0.0f, +1.0f,
-		+0.0f, -1.0f, BLUE_TRIANGLE_Z,
-		+0.0f, +0.0f, +1.0f,
-		-1.0f, +1.0f, BLUE_TRIANGLE_Z,
-		+0.0f, +0.0f, +1.0f,
-	};
+	//	+1.0f, +1.0f, BLUE_TRIANGLE_Z,
+	//	+0.0f, +0.0f, +1.0f,
+	//	+0.0f, -1.0f, BLUE_TRIANGLE_Z,
+	//	+0.0f, +0.0f, +1.0f,
+	//	-1.0f, +1.0f, BLUE_TRIANGLE_Z,
+	//	+0.0f, +0.0f, +1.0f,
+	//};
 
 	//declare vertex buffer Id
 	GLuint vertexBufferID;
@@ -34,7 +42,8 @@ void sendDatatoOpenGL()
 	//Bind vertex buffer to vertices
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
 	//Define which buffer to bind to vertex array to
-	glBufferData(GL_ARRAY_BUFFER, sizeof(verts), verts, GL_STATIC_DRAW);
+	//glBufferData(GL_ARRAY_BUFFER, sizeof(verts), verts, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, MAX_TRIS * TRIANGLE_BYTE_SIZE, NULL, GL_STATIC_DRAW);
 	//enable vertex position
 	glEnableVertexAttribArray(0);
 	//Describe type  of data to OpenGL (0 = position attribute, 2 = # of position floats, sizeof(float) * 6 = stride to next element)
@@ -44,17 +53,49 @@ void sendDatatoOpenGL()
 	//Describe type of data to OpenGL (1 = position attribute, 3 = # of color floats, sizeof(float) * 6 = stride t0 next element, (char*)(sizeof(float) * 2)) = where does color data begin in the element)
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (char*)(sizeof(float) * 3));
 
-	// Index array of points on a triangle (store each vertex as an index)
-	GLushort indices[] = { 0, 1, 2, 3, 4, 5};
-	// declare index buffer Id
-	GLuint indexBufferID;
-	//Create index buffer
-	glGenBuffers(1, &indexBufferID);
-	//Bind index buffer to points elements
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferID);
-	//Define which buffer to bind to index array to
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	//// Index array of points on a triangle (store each vertex as an index)
+	//GLushort indices[] = { 0, 1, 2, 3, 4, 5};
+	//// declare index buffer Id
+	//GLuint indexBufferID;
+	////Create index buffer
+	//glGenBuffers(1, &indexBufferID);
+	////Bind index buffer to points elements
+	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferID);
+	////Define which buffer to bind to index array to
+	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 }
+
+void sendAnotherTriToOpenGL()
+{
+	if (numTris == MAX_TRIS)
+		return;
+
+	const GLfloat THIS_TRI_X = -1 + numTris * X_DELTA;
+	GLfloat thisTri[] =
+	{
+		THIS_TRI_X, 1.0f, 0.0f,	1.0f, 0.0f, 0.0f,
+
+		THIS_TRI_X + X_DELTA, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+
+		THIS_TRI_X, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+	};
+
+	//assigning data to allocated subbuffer
+	glBufferSubData(GL_ARRAY_BUFFER, numTris * TRIANGLE_BYTE_SIZE, TRIANGLE_BYTE_SIZE, thisTri);
+	numTris++;
+}
+
+//Draw to window
+void Window::paintGL()
+{
+	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+	glViewport(0, 0, width(), height());
+	sendAnotherTriToOpenGL();
+	glDrawArrays(GL_TRIANGLES, (numTris - 1) * NUM_VERTICES_PER_TRI, NUM_VERTICES_PER_TRI); //use if drawing from vertex array instead of indices
+	//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
+}
+
+
 
 bool checkStatus(GLuint objectID,PFNGLGETSHADERIVPROC objectPropertyGetterFunc,	PFNGLGETSHADERINFOLOGPROC getInfoLogFunc,GLenum statusType)
 {
@@ -146,15 +187,4 @@ void Window::initializeGL()
 	sendDatatoOpenGL();
 	installShaders();
 }
-
-
-//Draw to window
-void Window::paintGL()
-{
-	glClear(GL_DEPTH_BUFFER_BIT);
-	glViewport(0, 0, width(), height());
-	//glDrawArrays(GL_TRIANGLES, 0, 6); //if drawing from vertex array instead of indices
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
-}
-
 
