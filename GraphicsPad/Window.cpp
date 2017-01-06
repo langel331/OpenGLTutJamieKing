@@ -7,9 +7,6 @@
 #include <Primitives\Vertex.h>
 #include <Primitives\ShapeGenerator.h>
 
-using glm::translate;
-using glm::rotate;
-using glm::perspective;
 using glm::vec3;
 using glm::mat4;
 
@@ -19,7 +16,7 @@ const uint VERTEX_BYTE_SIZE = NUM_FLOATS_PER_VERTICE * sizeof(float);
 GLuint programID;
 GLuint numIndices;
 
-void sendDatatoOpenGL()
+void Window::sendDatatoOpenGL()
 {
 	ShapeData shape = ShapeGenerator::makeCube();
 
@@ -52,6 +49,42 @@ void sendDatatoOpenGL()
 	numIndices = shape.numIndices;
 
 	shape.cleanup();
+
+	//declare transformation matrix buffer Id
+	GLuint transformationMatrixBufferID;
+	//Create transformation matrix buffer
+	glGenBuffers(1, &transformationMatrixBufferID);
+	//Bind transformation matrix buffer
+	glBindBuffer(GL_ARRAY_BUFFER, transformationMatrixBufferID);
+	
+	//set projection matrix (flatten model in front of camera lens) 
+	mat4 projectionMatrix = glm::perspective(60.0f, ((float)width()) / height(), 0.1f, 10.0f);
+
+	//array of cube matrices
+	mat4 fullTransforms[]
+	{
+		//cube 1
+		projectionMatrix * glm::translate(mat4(), vec3(-1.0f, 0.0f, -3.0f)) * glm::rotate(mat4(), 36.0f, vec3(1.0, 0.0f, 0.0f)),
+		//cube 2
+		projectionMatrix * glm::translate(mat4(), vec3(1.0f, 0.0f, -3.75f)) * glm::rotate(mat4(), 126.0f, vec3(0.0f, 1.0f, 0.0f))
+	};
+	//define data to buffer
+	glBufferData(GL_ARRAY_BUFFER, sizeof(fullTransforms), fullTransforms, GL_STATIC_DRAW);
+	//Describe type  of data to OpenGL
+	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(mat4), (void*)(sizeof(float) * 0));
+	glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(mat4), (void*)(sizeof(float) * 4));
+	glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(mat4), (void*)(sizeof(float) * 8));
+	glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(mat4), (void*)(sizeof(float) * 12));
+	//enable matrix data
+	glEnableVertexAttribArray(2);
+	glEnableVertexAttribArray(3);
+	glEnableVertexAttribArray(4);
+	glEnableVertexAttribArray(5);
+	//indexes each matrix
+	glVertexAttribDivisor(2, 1);
+	glVertexAttribDivisor(3, 1);
+	glVertexAttribDivisor(4, 1);
+	glVertexAttribDivisor(5, 1);
 }
 
 
@@ -60,30 +93,9 @@ void Window::paintGL()
 {
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	glViewport(0, 0, width(), height());
-	
-	//set projection matrix (flatten model in front of canera lens) 
-	mat4 projectionMatrix = perspective(60.0f, ((float)width()) / height(), 0.1f, 10.0f);
-	//translate the projection matrix
-	mat4 projectionTranslateMatrix = translate(projectionMatrix, vec3(-1.0f, 0.0f, -3.0f));
-	//rotate the translated projection matrix = full matrix
-	mat4 fullTransformMatrix = rotate(projectionTranslateMatrix, 36.0f, vec3(1.0, 0.0f, 0.0f));
-	//get data from VertexShader
-	GLint fullTransformMatrixUniformLocation = glGetUniformLocation(programID, "fullTransformMatrix");
-	//send matrix to VertexShader
-	glUniformMatrix4fv(fullTransformMatrixUniformLocation, 1, GL_FALSE, &fullTransformMatrix[0][0]);
-	//draw cube 1
-	glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, 0);
 
-	//translate the projection matrix
-	projectionTranslateMatrix = translate(projectionMatrix, vec3(1.0f, 0.0f, -3.75f));
-	//rotate the translated projection matrix = full matrix
-	fullTransformMatrix = rotate(projectionTranslateMatrix, 126.0f, vec3(0.0, 1.0f, 0.0f));
-	//get data from VertexShader
-	fullTransformMatrixUniformLocation = glGetUniformLocation(programID, "fullTransformMatrix");
-	//send matrix to VertexShader
-	glUniformMatrix4fv(fullTransformMatrixUniformLocation, 1, GL_FALSE, &fullTransformMatrix[0][0]);
-	//draw cube 2
-	glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, 0);
+	//draw cubes
+	glDrawElementsInstanced(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, 0, 2);
 }
 
 
@@ -108,18 +120,18 @@ bool checkStatus(GLuint objectID, PFNGLGETSHADERIVPROC objectPropertyGetterFunc,
 }
 
 //checks if shaders compiled
-bool checkShaderStatus(GLuint shaderID)
+bool Window::checkShaderStatus(GLuint shaderID)
 {
 	return checkStatus(shaderID, glGetShaderiv, glGetShaderInfoLog, GL_COMPILE_STATUS);
 }
 
 //checks if shaders linked to program
-bool checkProgramStatus(GLuint programID)
+bool Window::checkProgramStatus(GLuint programID)
 {
 	return checkStatus(programID, glGetProgramiv, glGetProgramInfoLog, GL_LINK_STATUS);
 }
 
-std::string readShaderCode(const char*fileName)
+std::string Window::readShaderCode(const char*fileName)
 {
 	//read shader file
 	std::ifstream meInput(fileName);
@@ -134,7 +146,7 @@ std::string readShaderCode(const char*fileName)
 
 }
 
-void installShaders()
+void Window::installShaders()
 {
 	//create vertex shader object
 	GLuint vertexShaderID = glCreateShader(GL_VERTEX_SHADER);
