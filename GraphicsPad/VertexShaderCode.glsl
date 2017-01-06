@@ -3,14 +3,17 @@
 in layout(location=0) vec3 position;
 in layout(location=1) vec3 vertexColor;
 
-uniform vec3 dominatingColor;
-uniform float yFlip;
+uniform mat4 modelTransformMatrix;
+uniform mat4 projectionMatrix;
+
 
 out vec3 inputColor;
 
 void main()
 {
-	gl_Position = vec4(position, 1.0);
-	gl_Position.y = gl_Position.y * yFlip;
-	inputColor = dominatingColor;
+	vec4 v = vec4(position, 1.0);
+	vec4 newPosition = modelTransformMatrix * v;
+	vec4 projectedPostion = projectionMatrix * newPosition;
+	gl_Position = projectedPostion;
+	inputColor = vertexColor;
 }
