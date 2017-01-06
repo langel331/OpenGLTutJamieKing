@@ -61,20 +61,28 @@ void Window::paintGL()
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	glViewport(0, 0, width(), height());
 	
-	//set projection matrix (flatten model in front of canera lens)
+	//set projection matrix (flatten model in front of canera lens) 
 	mat4 projectionMatrix = perspective(60.0f, ((float)width()) / height(), 0.1f, 10.0f);
 	//translate the projection matrix
-	mat4 projectionTranslateMatrix = translate(projectionMatrix, vec3(0.0f, 0.0f, -3.0f));
+	mat4 projectionTranslateMatrix = translate(projectionMatrix, vec3(-1.0f, 0.0f, -3.0f));
 	//rotate the translated projection matrix = full matrix
-	mat4 fullTransformMatrix = rotate(projectionTranslateMatrix, 54.0f, vec3(1.0, 0.0f, 0.0f));
-	
+	mat4 fullTransformMatrix = rotate(projectionTranslateMatrix, 36.0f, vec3(1.0, 0.0f, 0.0f));
 	//get data from VertexShader
 	GLint fullTransformMatrixUniformLocation = glGetUniformLocation(programID, "fullTransformMatrix");
-	
 	//send matrix to VertexShader
 	glUniformMatrix4fv(fullTransformMatrixUniformLocation, 1, GL_FALSE, &fullTransformMatrix[0][0]);
-	
-	//draw element
+	//draw cube 1
+	glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, 0);
+
+	//translate the projection matrix
+	projectionTranslateMatrix = translate(projectionMatrix, vec3(1.0f, 0.0f, -3.75f));
+	//rotate the translated projection matrix = full matrix
+	fullTransformMatrix = rotate(projectionTranslateMatrix, 126.0f, vec3(0.0, 1.0f, 0.0f));
+	//get data from VertexShader
+	fullTransformMatrixUniformLocation = glGetUniformLocation(programID, "fullTransformMatrix");
+	//send matrix to VertexShader
+	glUniformMatrix4fv(fullTransformMatrixUniformLocation, 1, GL_FALSE, &fullTransformMatrix[0][0]);
+	//draw cube 2
 	glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, 0);
 }
 
@@ -99,11 +107,13 @@ bool checkStatus(GLuint objectID, PFNGLGETSHADERIVPROC objectPropertyGetterFunc,
 	return true;
 }
 
+//checks if shaders compiled
 bool checkShaderStatus(GLuint shaderID)
 {
 	return checkStatus(shaderID, glGetShaderiv, glGetShaderInfoLog, GL_COMPILE_STATUS);
 }
 
+//checks if shaders linked to program
 bool checkProgramStatus(GLuint programID)
 {
 	return checkStatus(programID, glGetProgramiv, glGetProgramInfoLog, GL_LINK_STATUS);
@@ -158,6 +168,10 @@ void installShaders()
 	if (!checkProgramStatus(programID))
 		return;
 
+	//delete shaders
+	glDeleteShader(vertexShaderID);
+	glDeleteShader(fragmentShaderID);
+
 	//install shaders
 	glUseProgram(programID);
 }
@@ -169,5 +183,13 @@ void Window::initializeGL()
 	glEnable(GL_DEPTH_TEST);
 	sendDatatoOpenGL();
 	installShaders();
+}
+
+Window::~Window()
+{
+	//stop using the program we created
+	glUseProgram(0);
+	//delete the program we created
+	glDeleteProgram(programID);
 }
 

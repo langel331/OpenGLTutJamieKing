@@ -9,6 +9,7 @@ protected:
 	void paintGL();
 
 public:
+	~Window();
 
 };
 #endif 
