@@ -15,10 +15,12 @@ struct ShapeData
 	{
 		return numVertices * sizeof(Vertex);
 	}
+
 	GLsizeiptr indexBufferSize() const
 	{
 		return numIndices * sizeof(GLushort);
 	}
+
 	void cleanup()
 	{
 		delete[] vertices;

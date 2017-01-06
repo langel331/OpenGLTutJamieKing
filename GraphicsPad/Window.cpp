@@ -9,6 +9,7 @@
 const uint NUM_VERTICES_PER_TRI = 3;
 const uint NUM_FLOATS_PER_VERTICE = 6;
 const uint VERTEX_BYTE_SIZE = NUM_FLOATS_PER_VERTICE * sizeof(float);
+GLuint programID;
 
 void sendDatatoOpenGL()
 {
@@ -39,7 +40,7 @@ void sendDatatoOpenGL()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexArrayBufferID);
 	//Define which buffer to bind to index array to
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, tri.indexBufferSize(), tri.indices, GL_STATIC_DRAW);
-	
+
 	tri.cleanup();
 }
 
@@ -49,11 +50,25 @@ void Window::paintGL()
 {
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	glViewport(0, 0, width(), height());
+
+	//uniform vector to overwrite vector color data
+	glm::vec3 dominatingColor(1.0f, 0.0f, 0.0f);
+	GLint dominatingColorUniformLocation = glGetUniformLocation(programID, "dominatingColor");
+	GLint yFlipUniformLocation = glGetUniformLocation(programID, "yFlip");
+	glUniform3fv(dominatingColorUniformLocation, 1, &dominatingColor[0]);
+	glUniform1f(yFlipUniformLocation, 1.0f);
+	glDrawArrays(GL_TRIANGLES, 0, 3);
+
+	dominatingColor.r = 0;
+	dominatingColor.b = 1;
+	glUniform3fv(dominatingColorUniformLocation, 1, &dominatingColor[0]);
+	glUniform1f(yFlipUniformLocation, -1.0f);
 	glDrawArrays(GL_TRIANGLES, 0, 3);
 }
 
 
-bool checkStatus(GLuint objectID,PFNGLGETSHADERIVPROC objectPropertyGetterFunc,	PFNGLGETSHADERINFOLOGPROC getInfoLogFunc,GLenum statusType)
+
+bool checkStatus(GLuint objectID, PFNGLGETSHADERIVPROC objectPropertyGetterFunc, PFNGLGETSHADERINFOLOGPROC getInfoLogFunc, GLenum statusType)
 {
 	GLint status;
 	objectPropertyGetterFunc(objectID, statusType, &status);
@@ -86,7 +101,7 @@ std::string readShaderCode(const char*fileName)
 {
 	//read shader file
 	std::ifstream meInput(fileName);
-	
+
 	//throws error if failed to load
 	if (!meInput.good())
 	{
@@ -94,7 +109,7 @@ std::string readShaderCode(const char*fileName)
 		exit(1);
 	}
 	return std::string(std::istreambuf_iterator<char>(meInput), std::istreambuf_iterator<char>());
-			
+
 }
 
 void installShaders()
@@ -103,7 +118,6 @@ void installShaders()
 	GLuint vertexShaderID = glCreateShader(GL_VERTEX_SHADER);
 	//create fragment shader object
 	GLuint fragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
-
 
 	//assign source files to corresponding shaders
 	const char* adapter[1];
@@ -122,7 +136,7 @@ void installShaders()
 		return;
 
 	//create program to link shaders
-	GLuint programID = glCreateProgram();
+	programID = glCreateProgram();
 	//attach shaders to program
 	glAttachShader(programID, vertexShaderID);
 	glAttachShader(programID, fragmentShaderID);
