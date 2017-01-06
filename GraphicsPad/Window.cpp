@@ -60,16 +60,14 @@ void Window::paintGL()
 {
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	glViewport(0, 0, width(), height());
-
-	//set model matrix (translate model)
-	mat4 translateMatrix = translate(mat4(), vec3(0.0f, 0.0f, -3.0f));
-	//set rotation matrix (rotate model)
-	mat4 rotationMatrix = rotate(mat4(), 54.0f, vec3(1.0, 0.0f, 0.0f));
+	
 	//set projection matrix (flatten model in front of canera lens)
 	mat4 projectionMatrix = perspective(60.0f, ((float)width()) / height(), 0.1f, 10.0f);
-	//combine model, rotation, and projection matrix
-	mat4 fullTransformMatrix = projectionMatrix * translateMatrix * rotationMatrix;
-
+	//translate the projection matrix
+	mat4 projectionTranslateMatrix = translate(projectionMatrix, vec3(0.0f, 0.0f, -3.0f));
+	//rotate the translated projection matrix = full matrix
+	mat4 fullTransformMatrix = rotate(projectionTranslateMatrix, 54.0f, vec3(1.0, 0.0f, 0.0f));
+	
 	//get data from VertexShader
 	GLint fullTransformMatrixUniformLocation = glGetUniformLocation(programID, "fullTransformMatrix");
 	
