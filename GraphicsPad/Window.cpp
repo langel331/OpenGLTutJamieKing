@@ -1,11 +1,13 @@
 #include <GL\glew.h>
 #include <iostream>
 #include <fstream>
+#include <QtGui\qmouseevent>
 #include "Window.h"
 #include <glm\glm.hpp>
 #include <glm\gtc\matrix_transform.hpp>
 #include <Primitives\Vertex.h>
 #include <Primitives\ShapeGenerator.h>
+#include "Camera.h"
 
 using glm::vec3;
 using glm::mat4;
@@ -15,6 +17,7 @@ const uint NUM_FLOATS_PER_VERTICE = 6;
 const uint VERTEX_BYTE_SIZE = NUM_FLOATS_PER_VERTICE * sizeof(float);
 GLuint programID;
 GLuint numIndices;
+Camera camera;
 
 void Window::sendDatatoOpenGL()
 {
@@ -30,7 +33,7 @@ void Window::sendDatatoOpenGL()
 	glBufferData(GL_ARRAY_BUFFER, shape.vertexBufferSize(), shape.vertices, GL_STATIC_DRAW);
 	//enable vertex position
 	glEnableVertexAttribArray(0);
-	//Describe type of data to OpenGL (0 = position attribute, 3 = # of position floats, sizeof(float) * 6 = stride to next element)
+	//Describe type  of data to OpenGL (0 = position attribute, 3 = # of position floats, sizeof(float) * 6 = stride to next element)
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, 0);
 	//enable vertex color data
 	glEnableVertexAttribArray(1);
@@ -57,19 +60,10 @@ void Window::sendDatatoOpenGL()
 	//Bind transformation matrix buffer
 	glBindBuffer(GL_ARRAY_BUFFER, transformationMatrixBufferID);
 	
-	//set projection matrix (flatten model in front of camera lens) 
-	mat4 projectionMatrix = glm::perspective(60.0f, ((float)width()) / height(), 0.1f, 10.0f);
 
-	//array of cube matrices
-	mat4 fullTransforms[]
-	{
-		//cube 1
-		projectionMatrix * glm::translate(mat4(), vec3(-1.0f, 0.0f, -3.0f)) * glm::rotate(mat4(), 36.0f, vec3(1.0, 0.0f, 0.0f)),
-		//cube 2
-		projectionMatrix * glm::translate(mat4(), vec3(1.0f, 0.0f, -3.75f)) * glm::rotate(mat4(), 126.0f, vec3(0.0f, 1.0f, 0.0f))
-	};
-	//define data to buffer
-	glBufferData(GL_ARRAY_BUFFER, sizeof(fullTransforms), fullTransforms, GL_STATIC_DRAW);
+
+	//define data to buffer and send data later
+	glBufferData(GL_ARRAY_BUFFER, sizeof(mat4) * 2, 0, GL_DYNAMIC_DRAW);
 	//Describe type  of data to OpenGL
 	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(mat4), (void*)(sizeof(float) * 0));
 	glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(mat4), (void*)(sizeof(float) * 4));
@@ -91,6 +85,19 @@ void Window::sendDatatoOpenGL()
 //Draw to window
 void Window::paintGL()
 {
+	//set projection matrix (flatten model in front of camera lens) 
+	mat4 projectionMatrix = glm::perspective(60.0f, ((float)width()) / height(), 0.1f, 10.0f);
+
+	//array of cube matrices
+	mat4 fullTransforms[]
+	{
+		//cube 1 projection matrix * world to view matrix * model to world matrix
+		projectionMatrix * camera.getWorldToViewMatrix() * glm::translate(mat4(), vec3(-1.0f, 0.0f, -3.0f)) * glm::rotate(mat4(), 36.0f, vec3(1.0, 0.0f, 0.0f)),
+		//cube 2
+		projectionMatrix * camera.getWorldToViewMatrix() * glm::translate(mat4(), vec3(1.0f, 0.0f, -3.75f)) * glm::rotate(mat4(), 126.0f, vec3(0.0f, 1.0f, 0.0f))
+	};
+	glBufferData(GL_ARRAY_BUFFER, sizeof(fullTransforms), fullTransforms, GL_DYNAMIC_DRAW);
+
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	glViewport(0, 0, width(), height());
 
@@ -98,7 +105,12 @@ void Window::paintGL()
 	glDrawElementsInstanced(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, 0, 2);
 }
 
-
+void Window::mouseMoveEvent(QMouseEvent* e)
+{
+	//recalculate mouse direction
+	camera.mouseUpdate(glm::vec2(e->x(), e->y()));
+	repaint();
+}
 
 bool checkStatus(GLuint objectID, PFNGLGETSHADERIVPROC objectPropertyGetterFunc, PFNGLGETSHADERINFOLOGPROC getInfoLogFunc, GLenum statusType)
 {
@@ -188,9 +200,10 @@ void Window::installShaders()
 	glUseProgram(programID);
 }
 
-//Iniitalize GL
+//Initalize GL
 void Window::initializeGL()
 {
+	setMouseTracking(true);
 	glewInit();
 	glEnable(GL_DEPTH_TEST);
 	sendDatatoOpenGL();

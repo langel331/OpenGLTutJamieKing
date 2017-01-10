@@ -1,31 +1,32 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <ClInclude Include="MeGlWindow.h" />
+    <ClInclude Include="Primitives\Vertex.h" />
+    <ClInclude Include="Window.h" />
+    <ClInclude Include="Primitives\ShapeData.h">
+      <Filter>Primitive</Filter>
+    </ClInclude>
+    <ClInclude Include="Primitives\ShapeGenerator.h">
+      <Filter>Primitive</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="VertexShaderCode.glsl" />
+    <None Include="FragmentShaderCode.glsl" />
+  </ItemGroup>
+  <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Window.cpp" />
     <ClCompile Include="Primitives\ShapeGenerator.cpp">
-      <Filter>Primatives</Filter>
+      <Filter>Primitive</Filter>
     </ClCompile>
+    <ClCompile Include="Camera.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Window.h" />
-    <ClInclude Include="ShapeData.h">
-      <Filter>Primatives</Filter>
-    </ClInclude>
-    <ClInclude Include="Primitives\ShapeGenerator.h">
-      <Filter>Primatives</Filter>
-    </ClInclude>
-    <ClInclude Include="Primitives\Vertex.h">
-      <Filter>Primatives</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <Filter Include="Primatives">
-      <UniqueIdentifier>{a4057c78-d2d3-4f33-9fa5-492a5c50a37e}</UniqueIdentifier>
+    <Filter Include="Primitive">
+      <UniqueIdentifier>{501f5e68-6a7e-445d-919e-a25f7fb42868}</UniqueIdentifier>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="FragmentShaderCode.glsl" />
-    <None Include="VertexShaderCode.glsl" />
   </ItemGroup>
 </Project>

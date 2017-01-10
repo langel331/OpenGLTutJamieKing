@@ -8,10 +8,10 @@ class Window : public QGLWidget
 protected:
 	void initializeGL();
 	void paintGL();
+	void mouseMoveEvent(QMouseEvent*);
 
 public:
 	void sendDatatoOpenGL();
-	//bool checkStatus(GLuint objectID, PFNGLGETSHADERIVPROC objectPropertyGetterFunc, PFNGLGETSHADERINFOLOGPROC getInfoLogFunc, GLenum statusType);
 	bool checkProgramStatus(GLuint programID);
 	bool checkShaderStatus(GLuint shaderID);
 	std::string readShaderCode(const char*fileName);
