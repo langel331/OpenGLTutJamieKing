@@ -30,7 +30,7 @@ void Window::sendDatatoOpenGL()
 	glBufferData(GL_ARRAY_BUFFER, shape.vertexBufferSize(), shape.vertices, GL_STATIC_DRAW);
 	//enable vertex position
 	glEnableVertexAttribArray(0);
-	//Describe type  of data to OpenGL (0 = position attribute, 3 = # of position floats, sizeof(float) * 6 = stride to next element)
+	//Describe type of data to OpenGL (0 = position attribute, 3 = # of position floats, sizeof(float) * 6 = stride to next element)
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, 0);
 	//enable vertex color data
 	glEnableVertexAttribArray(1);
