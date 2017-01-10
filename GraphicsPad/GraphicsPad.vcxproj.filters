@@ -3,7 +3,7 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Window.cpp" />
-    <ClCompile Include="ShapeGenerator.cpp">
+    <ClCompile Include="Primitives\ShapeGenerator.cpp">
       <Filter>Primatives</Filter>
     </ClCompile>
   </ItemGroup>
@@ -12,20 +12,20 @@
     <ClInclude Include="ShapeData.h">
       <Filter>Primatives</Filter>
     </ClInclude>
-    <ClInclude Include="ShapeGenerator.h">
+    <ClInclude Include="Primitives\ShapeGenerator.h">
       <Filter>Primatives</Filter>
     </ClInclude>
-    <ClInclude Include="Vertex.h">
+    <ClInclude Include="Primitives\Vertex.h">
       <Filter>Primatives</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="FragmentShaderCode.glsl" />
-    <None Include="VertexShaderCode.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Primatives">
       <UniqueIdentifier>{a4057c78-d2d3-4f33-9fa5-492a5c50a37e}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="FragmentShaderCode.glsl" />
+    <None Include="VertexShaderCode.glsl" />
   </ItemGroup>
 </Project>
