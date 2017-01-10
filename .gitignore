@@ -27,3 +27,10 @@
 *.exe
 *.out
 *.app
+*.tlog
+*.db
+*.obj
+*.suo
+*.pdb
+*.db
+*.opendb
